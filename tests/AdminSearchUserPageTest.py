@@ -1,14 +1,20 @@
 from selenium.webdriver.common.by import By
 from time import sleep
+
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 from BaseTest import BaseTest
 from tests.LoginPageTest import LoginPageObject
 
 
-class AdminSearchUserPage(BaseTest):
+class AdminSearchUserPage:
 
+        def __init__(self, driver):
+            super().__init__()  # Call the constructor of the BaseTest class
+            self.driver = driver
 
         def loginAndGoToAdminUserSearchPage(self):
-            self.setUp()
             strona = LoginPageObject(self.driver)
             strona.login("Admin", "admin123")
             sleep(3)
@@ -48,10 +54,19 @@ class AdminSearchUserPage(BaseTest):
         def getEmployeeNameInput(self):
             return self.driver.find_element(By.CSS_SELECTOR, "input[placeholder='Type for hints...']")
 
-        def verifyUserSearchResults(self, listOfWebElements, searchedPhrase, ):
+        def getEmployeeNameInputHint(self):
+            return self.driver.find_element(By.CSS_SELECTOR, "div[class='oxd-autocomplete-dropdown --positon-bottom']")
+
+        def verifyUserSearchResults(self, listOfWebElements, searchedPhrase, numberForInfo):
+            #numberForInfo explained - pass one of this number to verify searched phrase against corresponding data
+            #0-checkbox
+            #1-Username
+            #2-User Role
+            #3-Employee Name
+            #4-Status
             for i in listOfWebElements:
-                username = self.driver.find_elements(By.XPATH, "//div[@class='oxd-table-cell oxd-padding-cell']")[2].text[i]
-                if username == searchedPhrase:
+                data = self.driver.find_elements(By.XPATH, "//div[@class='oxd-table-cell oxd-padding-cell']")[numberForInfo].text
+                if data == searchedPhrase:
                     pass
                 else:
                     return False
@@ -63,36 +78,36 @@ class AdminSearchUserPage(BaseTest):
         def getEditIconOfElement(self, webElement):
             return webElement.self.driver.find_element(By.CSS_SELECTOR, "i[class='oxd-icon bi-pencil-fill']")
 
-class AdminSearchUserPageTest(BaseTest):
+class AdminSearchUserPageTest(BaseTest, AdminSearchUserPage):
 
 
     def test001SearchByUsername(self):
-        adminSearchUserPage = AdminSearchUserPage()
-        adminSearchUserPage.loginAndGoToAdminUserSearchPage()
+        self.loginAndGoToAdminUserSearchPage()
         sleep(3)
-        userinput = adminSearchUserPage.getUserInput()
+        userinput = self.getUserInput()
         searchedPchrase = "Admin"
         userinput.send_keys(searchedPchrase)
-        adminSearchUserPage.getSubmitButton().click()
-        listOfSearchResult = adminSearchUserPage.getSearchResults()
+        self.getSubmitButton().click()
+        listOfSearchResult = self.getSearchResults()
 
         #going though list of results and compare name of the resulted record with searched phrase
         #as the search engine works in the way that it only search by the exact phrase, this is the same mechanism
         #I implemented in my test. If at least one name is diferent from the searchresult, the whole test fails
-        self.assertTrue(adminSearchUserPage.verifyUserSearchResults(listOfSearchResult, searchedPchrase))
+        self.assertTrue(self.verifyUserSearchResults(listOfSearchResult, searchedPchrase, 1))
 
     def test002SearchByEmployeeName(self):
-        adminSearchUserPage = AdminSearchUserPage()
-        adminSearchUserPage.loginAndGoToAdminUserSearchPage()
 
-        nameInput = adminSearchUserPage.getEmployeeNameInput()
-        searchedPchrase = "Placeholder"
+        self.loginAndGoToAdminUserSearchPage()
+
+        nameInput = self.getEmployeeNameInput()
+        searchedPchrase = "Alice Duval"
         nameInput.send_keys(searchedPchrase)
-        adminSearchUserPage.getSubmitButton().click()
-        listOfSearchResult = adminSearchUserPage.getSearchResults()
+        sleep(1)
+        self.getEmployeeNameInputHint().click()
+        self.getSubmitButton().click()
+        listOfSearchResult = self.getSearchResults()
+        self.assertTrue(self.verifyUserSearchResults(listOfSearchResult, searchedPchrase,3))
 
-        self.assertTrue(adminSearchUserPage.verifyUserSearchResults(listOfSearchResult, searchedPchrase))
-
-        #self.assertTrue(page.verifySearchResults())
+        #self.assertTrue(self.verifySearchResults())
 
 
