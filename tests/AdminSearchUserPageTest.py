@@ -1,11 +1,12 @@
 from selenium.webdriver.common.by import By
 from time import sleep
-
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
 from BaseTest import BaseTest
+from BaseTest import mainPage
 from tests.LoginPageTest import LoginPageObject
+
+
 
 
 class AdminSearchUserPage:
@@ -15,26 +16,14 @@ class AdminSearchUserPage:
             self.driver = driver
 
         def loginAndGoToAdminUserSearchPage(self):
-            strona = LoginPageObject(self.driver)
-            strona.login("Admin", "admin123")
+            LoginPageObject.login(LoginPageObject(self.driver), "Admin", "admin123")
             sleep(3)
-            admin = self.getMenuElement("Admin")
+            admin = mainPage.getMenuElement(mainPage(self.driver),"Admin")
             admin.click()
-
-            #systemUsersDropdown = self.driver.find_element(By.CSS_SELECTOR, "i[class='oxd-icon bi-caret-down-fill']")
-            #systemUsersDropdown.click()
 
         def getUserInput(self):
             list = self.driver.find_elements(By.CSS_SELECTOR, "input[class='oxd-input oxd-input--active']")
             return list[1]
-
-        def getListOfTabs(self):
-            return self.driver.find_elements(By.CSS_SELECTOR, "a[class='oxd-main-menu-item']")
-
-        def getMenuElement(self, element):
-            for i in self.getListOfTabs():
-                if i.text == element:
-                    return i
 
         def getSubmitButton(self):
             return self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
@@ -70,6 +59,10 @@ class AdminSearchUserPage:
                     pass
                 else:
                     return False
+
+            if not listOfWebElements:
+                return False
+
             return True
 
         def getBinIconOfElement(self, webElement):
@@ -82,6 +75,8 @@ class AdminSearchUserPageTest(BaseTest, AdminSearchUserPage):
 
 
     def test001SearchByUsername(self):
+
+        #I need to somehow move it to some kind of "before test" method or something
         self.loginAndGoToAdminUserSearchPage()
         sleep(3)
         userinput = self.getUserInput()
@@ -100,14 +95,15 @@ class AdminSearchUserPageTest(BaseTest, AdminSearchUserPage):
         self.loginAndGoToAdminUserSearchPage()
 
         nameInput = self.getEmployeeNameInput()
+        #As this is a live test system, userbase can change so fixed name is not the best solution
+        #Need to pull a database before all tests or create a few users before testing to have this work
         searchedPchrase = "Alice Duval"
         nameInput.send_keys(searchedPchrase)
-        sleep(1)
+        sleep(3)
         self.getEmployeeNameInputHint().click()
         self.getSubmitButton().click()
         listOfSearchResult = self.getSearchResults()
         self.assertTrue(self.verifyUserSearchResults(listOfSearchResult, searchedPchrase,3))
 
-        #self.assertTrue(self.verifySearchResults())
 
 
