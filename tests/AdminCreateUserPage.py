@@ -16,7 +16,7 @@ class AdminCreateUserPage:
         self.driver = driver
 
     def loginAndGoToCreateUserPage(self):
-        AdminSearchUserPage.loginAndGoToAdminUserSearchPage(AdminSearchUserPage(self.driver))
+        AdminSearchUserPage.login_and_go_to_admin_user_search_page(AdminSearchUserPage(self.driver))
         addUserButton = self.driver.find_element(By.CSS_SELECTOR,"button[class='oxd-button oxd-button--medium oxd-button--secondary']")
         addUserButton.click()
 
@@ -63,11 +63,11 @@ class AdminCreateUserTest(BaseTest, AdminCreateUserPage):
         self.get_dropdown_option(1).click()
         self.get_password_input().send_keys("password123")
         self.get_confirm_password_input().send_keys("password123")
-        self.get_employee_name().send_keys("A")
+        self.get_employee_name().send_keys("T")
         #Need to add explicit wait later
         sleep(3)
-        self.get_dropdown_option(1).click()
-        self.get_username_input().send_keys("Jacobs001")
+        self.get_dropdown_option(0).click()
+        self.get_username_input().send_keys("Jacobs002")
         self.get_save_button().click()
 
         #TO DO:
