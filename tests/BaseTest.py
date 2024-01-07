@@ -1,17 +1,16 @@
 import unittest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from DataFactory import DataFactory
-from AdminCreateUserPage import AdminCreateUserPage
+
 class BaseTest(unittest.TestCase):
 
-    # def setUp(self):
+    # def setUp(self): #does not work on Mac M2 :(
     #     self.driver = webdriver.Firefox()
     #     self.driver.maximize_window()
     #     self.driver.get("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login")
     #     self.driver.implicitly_wait(10)
 
-    def setUp(self):
+    def setUp(self): #for M2 Apple silicon
         cService = webdriver.ChromeService(executable_path='/usr/bin/chromedriver')
         self.driver = webdriver.Chrome(service=cService)
         self.driver.implicitly_wait(10)
@@ -19,7 +18,6 @@ class BaseTest(unittest.TestCase):
 
     def tearDown(self):
         self.driver.quit()
-
 
 class mainPage:
 
