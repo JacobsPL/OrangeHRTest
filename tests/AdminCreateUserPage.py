@@ -83,10 +83,6 @@ class AdminCreateUserPage:
             self.get_password_input().sent_keys(password)
             self.get_confirm_password_input().sent_keys(password)
 
-            #WTF ???
-            user_name = DataFactory.get_user_name_from_record(database,i)
-            self.driver.find_elements(By.XPATH, "//input[@class='oxd-input oxd-input--active']")[1].sent_keys(user_name)
-
             self.driver.find_element(By.CSS_SELECTOR, "button[class='oxd-button oxd-button--medium oxd-button--secondary']").click()
 
 
