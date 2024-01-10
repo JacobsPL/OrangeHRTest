@@ -1,6 +1,7 @@
 from selenium.webdriver.common.by import By
 from time import sleep
-
+import random
+import string
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -14,12 +15,12 @@ class AdminCreateUserPage:
         super().__init__()  # Call the constructor of the BaseTest class
         self.driver = driver
 
-    def loginAndGoToCreateUserPage(self):
+    def login_and_go_to_create_user_page(self):
         AdminSearchUserPage.login_and_go_to_admin_user_search_page(AdminSearchUserPage(self.driver))
         addUserButton = self.driver.find_element(By.CSS_SELECTOR,"button[class='oxd-button oxd-button--medium oxd-button--secondary']")
         addUserButton.click()
 
-    def getUserRoleInputOption(self,role):
+    def get_user_role_input_option(self,role):
         listOfInput = self.driver.find_elements(By.CSS_SELECTOR, "div[role='option']")
         return listOfInput[role]
 
@@ -27,7 +28,7 @@ class AdminCreateUserPage:
         listOfInput = self.driver.find_elements(By.CSS_SELECTOR, "div[role='option']")
         return listOfInput[option]
 
-    def getUserRoleDropDown(self):
+    def get_user_role_dropDown(self):
         return self.driver.find_elements(By.CSS_SELECTOR,"div[class='oxd-select-text-input']")[0]
 
     def getStatusDropDown(self):
@@ -77,12 +78,13 @@ class AdminCreateUserPage:
 
             #WTF ???
             user_name = DataFactory.get_user_name_from_record(database,i)
-            self.get_username_input().sent_keys(user_name)
+            self.get_username_input().send_keys(user_name)
 
             password = DataFactory.get_password_from_record(database, i)
-            self.get_password_input().sent_keys(password)
-            self.get_confirm_password_input().sent_keys(password)
+            self.get_password_input().send_keys(password)
+            self.get_confirm_password_input().send_keys(password)
 
+            self.get_save_button().click()
             self.driver.find_element(By.CSS_SELECTOR, "button[class='oxd-button oxd-button--medium oxd-button--secondary']").click()
 
 
@@ -100,7 +102,7 @@ class AdminCreateUserTest(BaseTest, AdminCreateUserPage):
         #Need to add explicit wait later
         sleep(3)
         self.get_dropdown_option(0).click()
-        jacobs = "Jacobs002"
+        jacobs = "Jacobs003"
         self.get_username_input().send_keys(jacobs)
         self.get_save_button().click()
 

@@ -10,13 +10,13 @@ class BaseTest(unittest.TestCase):
     #     self.driver.get("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login")
     #     self.driver.implicitly_wait(10)
 
-    def setUp(self): #for M2 Apple silicon
+    def set_up(self): #for M2 Apple silicon
         cService = webdriver.ChromeService(executable_path='/usr/bin/chromedriver')
         self.driver = webdriver.Chrome(service=cService)
         self.driver.implicitly_wait(10)
         self.driver.get("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login")
 
-    def tearDown(self):
+    def tear_down(self):
         self.driver.quit()
 
 class mainPage:
