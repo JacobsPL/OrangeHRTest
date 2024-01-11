@@ -17,21 +17,21 @@ class AdminCreateUserPage:
 
     def login_and_go_to_create_user_page(self):
         AdminSearchUserPage.login_and_go_to_admin_user_search_page(AdminSearchUserPage(self.driver))
-        addUserButton = self.driver.find_element(By.CSS_SELECTOR,"button[class='oxd-button oxd-button--medium oxd-button--secondary']")
-        addUserButton.click()
+        add_user_button = self.driver.find_element(By.CSS_SELECTOR,"button[class='oxd-button oxd-button--medium oxd-button--secondary']")
+        add_user_button.click()
 
     def get_user_role_input_option(self,role):
-        listOfInput = self.driver.find_elements(By.CSS_SELECTOR, "div[role='option']")
-        return listOfInput[role]
+        list_of_input = self.driver.find_elements(By.CSS_SELECTOR, "div[role='option']")
+        return list_of_input[role]
 
     def get_dropdown_option(self,option):
-        listOfInput = self.driver.find_elements(By.CSS_SELECTOR, "div[role='option']")
-        return listOfInput[option]
+        list_of_input = self.driver.find_elements(By.CSS_SELECTOR, "div[role='option']")
+        return list_of_input[option]
 
     def get_user_role_dropDown(self):
         return self.driver.find_elements(By.CSS_SELECTOR,"div[class='oxd-select-text-input']")[0]
 
-    def getStatusDropDown(self):
+    def get_status_drop_down(self):
         return self.driver.find_elements(By.CSS_SELECTOR,"div[class='oxd-select-text-input']")[1]
 
     def get_password_input(self):
@@ -56,16 +56,16 @@ class AdminCreateUserPage:
 
         database = DataFactory
         users = database.get_all_users(database)
-        self.loginAndGoToCreateUserPage()
+        self.login_and_go_to_create_user_page()
 
         for i in users:
-            self.getUserRoleDropDown().click()
+            self.get_user_role_dropDown().click()
             if DataFactory.get_user_role_from_record(database,i) == "Admin":
                 self.get_dropdown_option(1).click()
             else:
                 self.get_dropdown_option(2).click()
 
-            self.getStatusDropDown().click()
+            self.get_status_drop_down().click()
             if DataFactory.get_status_from_record(database,i) == "Enabled":
                 self.get_dropdown_option(1).click()
             else:
@@ -91,10 +91,10 @@ class AdminCreateUserPage:
 class AdminCreateUserTest(BaseTest, AdminCreateUserPage):
 
     def test001_create_user_happy_path(self):
-        self.loginAndGoToCreateUserPage()
-        self.getUserRoleDropDown().click()
+        self.login_and_go_to_create_user_page()
+        self.get_user_role_dropDown().click()
         self.get_dropdown_option(1).click()
-        self.getStatusDropDown().click()
+        self.get_status_drop_down().click()
         self.get_dropdown_option(1).click()
         self.get_password_input().send_keys("password123")
         self.get_confirm_password_input().send_keys("password123")

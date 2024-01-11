@@ -25,10 +25,10 @@ class mainPage:
         super().__init__()  # Call the constructor of the BaseTest class
         self.driver = driver
 
-    def getListOfTabs(self):
+    def get_list_of_tabs(self):
         return self.driver.find_elements(By.CSS_SELECTOR, "a[class='oxd-main-menu-item']")
 
-    def getMenuElement(self, element):
-        for i in self.getListOfTabs():
+    def get_menu_element(self, element):
+        for i in self.get_list_of_tabs():
             if i.text == element:
                 return i
