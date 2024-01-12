@@ -10,9 +10,8 @@ from tests.LoginPageTest import LoginPageObject
 
 class AdminSearchUserPage:
 
-        def __init__(self):
-            super().__init__()  # Call the constructor of the BaseTest class
-            self.driver = webdriver.WebDriver
+        def __init__(self, driver):
+            self.driver = driver
 
         def login_and_go_to_admin_user_search_page(self):
             LoginPageObject.login(LoginPageObject(self.driver), "Admin", "admin123")
@@ -96,29 +95,25 @@ class AdminSearchUserPage:
 
 class AdminSearchUserPageTest(BaseTest, AdminSearchUserPage):
 
+    def setUp(self):
+        super().set_up()
+        self.login_and_go_to_admin_user_search_page()
 
     def test001_search_by_username(self):
 
-        #I need to somehow move it to some kind of "before test" method or something
-        self.login_and_go_to_admin_user_search_page()
-        sleep(3)
         userinput = self.get_username_input()
-        searchedPchrase = "Admin"
-        userinput.send_keys(searchedPchrase)
+        searched_pchrase = "Admin"
+        userinput.send_keys(searched_pchrase)
         self.get_submit_button().click()
         list_of_search_result = self.get_search_results()
 
         #going though list of results and compare name of the resulted record with searched phrase
         #as the search engine works in the way that it only search by the exact phrase, this is the same mechanism
         #I implemented in my test. If at least one name is diferent from the searchresult, the whole test fails
-        self.assertTrue(self.verify_user_search_results(list_of_search_result, searchedPchrase, 1))
-
-
+        self.assertTrue(self.verify_user_search_results(list_of_search_result, searched_pchrase, 1))
 
     def test02_search_by_user_role(self):
 
-        self.login_and_go_to_admin_user_search_page()
-        sleep(3)
         self.det_user_role_dropdown().click()
         self.get_dropdown_option(1).click()
         self.get_submit_button().click()
@@ -127,8 +122,6 @@ class AdminSearchUserPageTest(BaseTest, AdminSearchUserPage):
         self.assertTrue(self.verify_user_search_results(list_of_search_result, searchedPchrase, 2))
 
     def test003_search_by_employee_name(self):
-
-        self.login_and_go_to_admin_user_search_page()
 
         #As this is a live test system, userbase can change so fixed name is not the best solution
         #Need to pull a database before all tests or create a few users before testing to have this work
@@ -141,7 +134,6 @@ class AdminSearchUserPageTest(BaseTest, AdminSearchUserPage):
         self.assertTrue(self.verify_user_search_results(list_of_search_result, searchedPchrase, 3))
 
     def test004_search_by_status(self):
-        self.login_and_go_to_admin_user_search_page()
         self.get_status_dropdown().click()
         self.get_dropdown_option(1).click()
         searchedPchrase = "Enabled"
@@ -149,7 +141,6 @@ class AdminSearchUserPageTest(BaseTest, AdminSearchUserPage):
         self.assertTrue(self.verify_user_search_results(list_of_search_result, searchedPchrase, 4))
 
     def test005_delete_user_from_list(self):
-        self.login_and_go_to_admin_user_search_page()
         searchedPchrase = "test employee 2"
         self.get_employee_name_input().send_keys(searchedPchrase)
         sleep(3)
@@ -165,7 +156,6 @@ class AdminSearchUserPageTest(BaseTest, AdminSearchUserPage):
 
     def test999_delete_all_users(self):
 
-        self.login_and_go_to_admin_user_search_page()
         list_of_search_result = self.get_search_results()
         self.get_checkbox_from_record(list_of_search_result[0]).click()
         self.get_delete_all_users_button().click()

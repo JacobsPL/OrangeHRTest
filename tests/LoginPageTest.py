@@ -6,7 +6,6 @@ from BaseTest import BaseTest
 class LoginPageObject:
 
     def __init__(self, driver):
-        super().__init__()  # Call the constructor of the BaseTest class
         self.driver = driver
 
     def get_dashboard_title(self):
@@ -24,6 +23,9 @@ class LoginPageObject:
 
 
 class LoginPageTest(BaseTest, LoginPageObject):
+
+    def setUp(self):
+        super().set_up()
 
     def test001_happy_path(self):
         self.login("Admin", "admin123")

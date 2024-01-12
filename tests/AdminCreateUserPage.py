@@ -12,7 +12,6 @@ from DataFactory import DataFactory
 
 class AdminCreateUserPage:
     def __init__(self, driver):
-        super().__init__()  # Call the constructor of the BaseTest class
         self.driver = driver
 
     def login_and_go_to_create_user_page(self):
@@ -52,11 +51,35 @@ class AdminCreateUserPage:
     def get_cancel_button(self):
         return self.driver.find_element(By.XPATH, "//button[normalize-space()='Cancel']")
 
+    def get_password_error_message(self):
+        password_area = self.driver.find_element(By.CSS_SELECTOR, "div[class='oxd-grid-item oxd-grid-item--gutters user-password-cell']")
+        return password_area.find_element(By.CSS_SELECTOR, "span[class='oxd-text oxd-text--span oxd-input-field-error-message oxd-input-group__message']").text
+
+    def get_username_error_message(self):
+        username_area = self.driver.find_elements(By.CSS_SELECTOR, "div[class='oxd-grid-item oxd-grid-item--gutters']")
+        return username_area[3].find_element(By.CSS_SELECTOR, "span[class='oxd-text oxd-text--span oxd-input-field-error-message oxd-input-group__message']").text
+
+    def create_user(self,user_name, password, conf_password):
+        self.get_user_role_dropDown().click()
+        self.get_dropdown_option(1).click()
+        self.get_status_drop_down().click()
+        self.get_dropdown_option(1).click()
+        self.get_employee_name().send_keys("T")
+        # Need to add explicit wait later
+        sleep(3)
+        self.get_dropdown_option(0).click()
+
+        random_int = random.randint(100, 999)
+        full_user_name = str(user_name) + str(random_int)
+        self.get_username_input().send_keys(full_user_name)
+        self.get_password_input().send_keys(password)
+        self.get_confirm_password_input().send_keys(conf_password)
+        self.get_save_button().click()
+
     def create_initial_users(self):
 
         database = DataFactory
         users = database.get_all_users(database)
-        self.login_and_go_to_create_user_page()
 
         for i in users:
             self.get_user_role_dropDown().click()
@@ -76,7 +99,6 @@ class AdminCreateUserPage:
             sleep(3)
             self.get_dropdown_option(0).click()
 
-            #WTF ???
             user_name = DataFactory.get_user_name_from_record(database,i)
             self.get_username_input().send_keys(user_name)
 
@@ -88,27 +110,53 @@ class AdminCreateUserPage:
             self.driver.find_element(By.CSS_SELECTOR, "button[class='oxd-button oxd-button--medium oxd-button--secondary']").click()
 
 
+
+
 class AdminCreateUserTest(BaseTest, AdminCreateUserPage):
 
-    def test001_create_user_happy_path(self):
+    def setUp(self):
+        super().set_up()
         self.login_and_go_to_create_user_page()
-        self.get_user_role_dropDown().click()
-        self.get_dropdown_option(1).click()
-        self.get_status_drop_down().click()
-        self.get_dropdown_option(1).click()
-        self.get_password_input().send_keys("password123")
-        self.get_confirm_password_input().send_keys("password123")
-        self.get_employee_name().send_keys("T")
-        #Need to add explicit wait later
-        sleep(3)
-        self.get_dropdown_option(0).click()
-        jacobs = "Jacobs003"
-        self.get_username_input().send_keys(jacobs)
-        self.get_save_button().click()
+
+    def test001_create_user_happy_path(self):
+        self.create_user("password123","password123")
 
         #TO DO:
         #Add the assertion that correct message is displayed and that user can be found in user list
         sleep(3)
+
+    def test002_all_fields_are_required(self):
+        self.get_save_button().click()
+        #find all error message
+        error_messages = self.driver.find_elements(By.CSS_SELECTOR, "span[class='oxd-text oxd-text--span oxd-input-field-error-message oxd-input-group__message']")
+        #find all fields
+        all_fields = self.driver.find_elements(By.CSS_SELECTOR, "div[class^='oxd-grid-item oxd-grid-item--gutters']")
+        #assure that all fields are required
+        self.assertEqual(len(error_messages),len(all_fields))
+
+        for i in error_messages:
+            self.assertEqual(i.text, "Required")
+
+    def test003_password_different_from_confirm_password(self):
+        self.create_user("jacobs","password123","wrong_one")
+        sleep(1)
+        error_message = self.driver.find_element(By.CSS_SELECTOR, "span[class='oxd-text oxd-text--span oxd-input-field-error-message oxd-input-group__message']").text
+        self.assertEqual(error_message, "Passwords do not match")
+
+    def test004_username_below_5_characters(self):
+        self.create_user("J","password123", "password123")
+        self.assertEqual(self.get_username_error_message(), "Should be at least 5 characters")
+
+    def test005_password_below_7_characters(self):
+        self.create_user("Jacobs", "123456", "123456")
+        self.assertEqual(self.get_password_error_message(), "Should have at least 7 characters")
+
+    def test006_password_no_number(self):
+        self.create_user("Jacobs", "password", "password")
+        self.assertEqual(self.get_password_error_message(), "Your password must contain minimum 1 number")
+
+    #TO DO
+    # Add tests for Weak, better and strong password
 
     def test999_input_users_from_database_to_system(self):
         self.create_initial_users()

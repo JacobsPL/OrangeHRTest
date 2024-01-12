@@ -1,6 +1,8 @@
 import unittest
 from selenium import webdriver
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
+
 
 class BaseTest(unittest.TestCase):
 
@@ -18,11 +20,24 @@ class BaseTest(unittest.TestCase):
 
     def tear_down(self):
         self.driver.quit()
+    def check_exists_by_css(self,css_selector):
+        try:
+            self.driver.find_element(By.CSS_SELECTOR, css_selector)
+        except NoSuchElementException:
+             return False
+        return True
+
+    def check_exists_by_xpath(self,xpath_selector):
+        try:
+            self.driver.find_element(By.XPATH, xpath_selector)
+        except NoSuchElementException:
+             return False
+        return True
+
 
 class mainPage:
 
     def __init__(self, driver):
-        super().__init__()  # Call the constructor of the BaseTest class
         self.driver = driver
 
     def get_list_of_tabs(self):
