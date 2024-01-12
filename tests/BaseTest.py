@@ -15,7 +15,7 @@ class BaseTest(unittest.TestCase):
     def set_up(self): #for M2 Apple silicon
         cService = webdriver.ChromeService(executable_path='/usr/bin/chromedriver')
         self.driver = webdriver.Chrome(service=cService)
-        self.driver.implicitly_wait(10)
+        self.driver.implicitly_wait(30)
         self.driver.get("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login")
 
     def tear_down(self):
@@ -47,3 +47,21 @@ class mainPage:
         for i in self.get_list_of_tabs():
             if i.text == element:
                 return i
+
+    def get_logged_user_menu(self):
+        return self.driver.find_element(By.CSS_SELECTOR, "li[class='oxd-userdropdown']")
+
+    def get_logged_user_menu_dropdown_options(self):
+        return self.driver.find_elements(By.XPATH, "//ul[@class='oxd-dropdown-menu']/li")
+
+    def get_about_option(self):
+        return self.get_logged_user_menu_dropdown_options()[0]
+
+    def get_support_option(self):
+        return self.get_logged_user_menu_dropdown_options()[1]
+
+    def get_change_password_option(self):
+        return self.get_logged_user_menu_dropdown_options()[2]
+
+    def get_logout_option(self):
+        return self.get_logged_user_menu_dropdown_options()[3]

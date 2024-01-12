@@ -95,6 +95,7 @@ class AdminSearchUserPage:
 
 class AdminSearchUserPageTest(BaseTest, AdminSearchUserPage):
 
+    #TO DO: NEED TO ADD SEARCHING BY USERS FROM THE DATABASE
     def setUp(self):
         super().set_up()
         self.login_and_go_to_admin_user_search_page()

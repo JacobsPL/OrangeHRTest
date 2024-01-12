@@ -5,9 +5,10 @@ import string
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from BaseTest import BaseTest
+from BaseTest import BaseTest, mainPage
 from AdminSearchUserPageTest import AdminSearchUserPage
 from DataFactory import DataFactory
+from tests.LoginPageTest import LoginPageObject
 
 
 class AdminCreateUserPage:
@@ -55,6 +56,9 @@ class AdminCreateUserPage:
         password_area = self.driver.find_element(By.CSS_SELECTOR, "div[class='oxd-grid-item oxd-grid-item--gutters user-password-cell']")
         return password_area.find_element(By.CSS_SELECTOR, "span[class='oxd-text oxd-text--span oxd-input-field-error-message oxd-input-group__message']").text
 
+    def get_password_strength_message(self):
+        return self.driver.find_element(By.CSS_SELECTOR, "span[class^='oxd-chip oxd-chip--default orangehrm-password-chip']").text
+
     def get_username_error_message(self):
         username_area = self.driver.find_elements(By.CSS_SELECTOR, "div[class='oxd-grid-item oxd-grid-item--gutters']")
         return username_area[3].find_element(By.CSS_SELECTOR, "span[class='oxd-text oxd-text--span oxd-input-field-error-message oxd-input-group__message']").text
@@ -65,13 +69,10 @@ class AdminCreateUserPage:
         self.get_status_drop_down().click()
         self.get_dropdown_option(1).click()
         self.get_employee_name().send_keys("T")
-        # Need to add explicit wait later
-        sleep(3)
-        self.get_dropdown_option(0).click()
+        WebDriverWait(self.driver,10).until_not(EC.text_to_be_present_in_element((By.CSS_SELECTOR,"div[class='oxd-autocomplete-dropdown --positon-bottom']"),"Searching...."))
 
-        random_int = random.randint(100, 999)
-        full_user_name = str(user_name) + str(random_int)
-        self.get_username_input().send_keys(full_user_name)
+        self.get_dropdown_option(0).click()
+        self.get_username_input().send_keys(user_name)
         self.get_password_input().send_keys(password)
         self.get_confirm_password_input().send_keys(conf_password)
         self.get_save_button().click()
@@ -109,6 +110,10 @@ class AdminCreateUserPage:
             self.get_save_button().click()
             self.driver.find_element(By.CSS_SELECTOR, "button[class='oxd-button oxd-button--medium oxd-button--secondary']").click()
 
+    def add_random_number_to_string(self,string,ran_min,ran_max):
+        random_int = random.randint(ran_min, ran_max)
+        return str(string) + str(random_int)
+
 
 
 
@@ -119,7 +124,7 @@ class AdminCreateUserTest(BaseTest, AdminCreateUserPage):
         self.login_and_go_to_create_user_page()
 
     def test001_create_user_happy_path(self):
-        self.create_user("password123","password123")
+        self.create_user(self.add_random_number_to_string("Jacobs",100,999),"password123","password123")
 
         #TO DO:
         #Add the assertion that correct message is displayed and that user can be found in user list
@@ -127,36 +132,80 @@ class AdminCreateUserTest(BaseTest, AdminCreateUserPage):
 
     def test002_all_fields_are_required(self):
         self.get_save_button().click()
-        #find all error message
         error_messages = self.driver.find_elements(By.CSS_SELECTOR, "span[class='oxd-text oxd-text--span oxd-input-field-error-message oxd-input-group__message']")
-        #find all fields
         all_fields = self.driver.find_elements(By.CSS_SELECTOR, "div[class^='oxd-grid-item oxd-grid-item--gutters']")
-        #assure that all fields are required
         self.assertEqual(len(error_messages),len(all_fields))
 
         for i in error_messages:
             self.assertEqual(i.text, "Required")
 
     def test003_password_different_from_confirm_password(self):
-        self.create_user("jacobs","password123","wrong_one")
-        sleep(1)
+        self.create_user(self.add_random_number_to_string("Jacobs",100,999),"password123","wrong_one")
+        WebDriverWait(self.driver,10).until_not(EC.text_to_be_present_in_element((By.CSS_SELECTOR,"span[class='oxd-text oxd-text--span oxd-input-field-error-message oxd-input-group__message']"),"Should be at least 5 characters"))
         error_message = self.driver.find_element(By.CSS_SELECTOR, "span[class='oxd-text oxd-text--span oxd-input-field-error-message oxd-input-group__message']").text
         self.assertEqual(error_message, "Passwords do not match")
 
     def test004_username_below_5_characters(self):
-        self.create_user("J","password123", "password123")
+        self.create_user(self.add_random_number_to_string("J",100,999),"password123", "password123")
         self.assertEqual(self.get_username_error_message(), "Should be at least 5 characters")
 
     def test005_password_below_7_characters(self):
-        self.create_user("Jacobs", "123456", "123456")
+        self.create_user(self.add_random_number_to_string("Jacobs",100,999), "123456", "123456")
         self.assertEqual(self.get_password_error_message(), "Should have at least 7 characters")
 
     def test006_password_no_number(self):
-        self.create_user("Jacobs", "password", "password")
+        self.create_user(self.add_random_number_to_string("Jacobs",100,999), "password", "password")
         self.assertEqual(self.get_password_error_message(), "Your password must contain minimum 1 number")
 
-    #TO DO
-    # Add tests for Weak, better and strong password
+    def test007_very_weak_password(self):
+        self.get_password_input().send_keys("password123")
+        sleep(1.5)
+        self.assertEqual(self.get_password_strength_message(), "Very Weak")
+
+    def test008_weak_password(self):
+        self.get_password_input().send_keys("password106")
+        sleep(1.5)
+        self.assertEqual(self.get_password_strength_message(), "Weak")
+
+    def test009_better_password(self):
+        self.get_password_input().send_keys("passwordd106")
+        sleep(1.5)
+        self.assertEqual(self.get_password_strength_message(), "Better")
+
+    def test0010_strong_password(self):
+        self.get_password_input().send_keys("passwordddd106")
+        sleep(1.5)
+        self.assertEqual(self.get_password_strength_message(), "Strong")
+
+    def test0011_strong_password(self):
+        self.get_password_input().send_keys("NotSoWeak666")
+        sleep(1.5)
+        self.assertEqual(self.get_password_strength_message(), "Strongest")
+
+    def test0012_login_new_user(self):
+        self.get_user_role_dropDown().click()
+        self.get_dropdown_option(1).click()
+        self.get_status_drop_down().click()
+        self.get_dropdown_option(1).click()
+        self.get_employee_name().send_keys("T")
+        WebDriverWait(self.driver,10).until_not(EC.text_to_be_present_in_element((By.CSS_SELECTOR,"div[class='oxd-autocomplete-dropdown --positon-bottom']"),"Searching...."))
+        self.get_dropdown_option(0).click()
+        jacobs_username = self.add_random_number_to_string("Jacobs",100,999)
+        self.get_username_input().send_keys(jacobs_username)
+        self.get_password_input().send_keys("password123")
+        self.get_confirm_password_input().send_keys("password123")
+        self.get_save_button().click()
+
+        sleep(5)
+        main_page = mainPage(self.driver)
+        main_page.get_logged_user_menu().click()
+        main_page.get_logout_option().click()
+
+        login_page = LoginPageObject(self.driver)
+        login_page.login(jacobs_username,"password123")
+
+        dashBoardTitle = login_page.get_dashboard_title()
+        self.assertEqual(dashBoardTitle, "Dashboard")
 
     def test999_input_users_from_database_to_system(self):
         self.create_initial_users()
