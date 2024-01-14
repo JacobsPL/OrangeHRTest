@@ -2,6 +2,11 @@ import unittest
 from selenium import webdriver
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+
+from tests.DataFactory import DataFactory
 
 
 class BaseTest(unittest.TestCase):
@@ -14,9 +19,18 @@ class BaseTest(unittest.TestCase):
 
     def set_up(self): #for M2 Apple silicon
         cService = webdriver.ChromeService(executable_path='/usr/bin/chromedriver')
+        #self.database_base_test = DataFactory
         self.driver = webdriver.Chrome(service=cService)
         self.driver.implicitly_wait(30)
         self.driver.get("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login")
+        flag = True
+
+        while(flag):
+            title = self.driver.find_elements(By.CSS_SELECTOR, "div[class='orangehrm-login-layout']")
+            if len(title) == 0:
+                self.driver.get("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login")
+            else:
+                flag = False
 
     def tear_down(self):
         self.driver.quit()
@@ -41,6 +55,7 @@ class mainPage:
         self.driver = driver
 
     def get_list_of_tabs(self):
+        WebDriverWait(self.driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"a[class='oxd-main-menu-item']")))
         return self.driver.find_elements(By.CSS_SELECTOR, "a[class='oxd-main-menu-item']")
 
     def get_menu_element(self, element):

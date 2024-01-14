@@ -45,13 +45,13 @@ class DataFactory:
         connection = self.create_connection("localhost", "root", "haslo")
         select_user = "SELECT * FROM OrangeHR.users WHERE id = " + str(id)
         user = self.execute_read_query(connection, select_user)
-        return user
+        return user[0]
 
     def get_user_by_user_name(self,user_name):
         connection = self.create_connection("localhost", "root", "haslo")
         select_user = "SELECT * FROM OrangeHR.users WHERE user_name = " + str(user_name)
         user = self.execute_read_query(connection, select_user)
-        return user
+        return user[0]
 
     def get_users_by_user_role(self,user_role):
         connection = self.create_connection("localhost", "root", "haslo")
@@ -71,7 +71,7 @@ class DataFactory:
         users = self.execute_read_query(connection, select_user)
         return users
 
-    def get_user_name_from_record(self, user):
+    def get_username_from_record(self, user):
         return(user[0])
 
     def get_user_role_from_record(self, user):
@@ -85,3 +85,14 @@ class DataFactory:
 
     def get_password_from_record(self, user):
         return(user[4])
+
+    def get_role_option(self,role):
+        if role == "Admin":
+            return 1
+        else:
+            return 2
+    def get_status_option(self,status):
+        if status == "Enabled":
+            return 1
+        else:
+            return 2
