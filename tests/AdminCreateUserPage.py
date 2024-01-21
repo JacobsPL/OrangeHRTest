@@ -138,11 +138,14 @@ class AdminCreateUserTest(BaseTest, AdminCreateUserPage):
         self.get_employee_name().send_keys("T")
         WebDriverWait(self.driver,10).until_not(EC.text_to_be_present_in_element((By.CSS_SELECTOR,"div[class='oxd-autocomplete-dropdown --positon-bottom']"),"Searching...."))
         self.get_dropdown_option(0).click()
+
         jacobs_username = self.add_random_number_to_string("Jacobs",100,999)
         self.get_username_input().send_keys(jacobs_username)
+        sleep(3)
         self.get_password_input().send_keys("password123")
         self.get_confirm_password_input().send_keys("password123")
         self.get_save_button().click()
+        sleep(3)
 
         main_page = mainPage(self.driver)
         main_page.get_logged_user_menu().click()

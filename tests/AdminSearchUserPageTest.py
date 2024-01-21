@@ -1,3 +1,4 @@
+from selenium.common import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome import webdriver
 from selenium.webdriver.common.by import By
 from time import sleep
@@ -49,18 +50,37 @@ class AdminSearchUserPage:
             return self.driver.find_element(By.CSS_SELECTOR, "button[class='oxd-button oxd-button--medium oxd-button--secondary']")
 
         def get_search_results(self):
-            sleep(2)
-            #WebDriverWait(self.driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"div[class='oxd-table-cell oxd-padding-cell']")))
-            return self.driver.find_elements(By.CSS_SELECTOR, "div[class='oxd-table-row oxd-table-row--with-border']")
+            WebDriverWait(self.driver,3).until(EC.presence_of_element_located((By.CSS_SELECTOR,"div[class='oxd-table-cell oxd-padding-cell']")))
+            list = self.driver.find_elements(By.CSS_SELECTOR, "div[class='oxd-table-row oxd-table-row--with-border']")
+            #remove header record
+            print("Lista wyszukanych elementów po przed headera")
+            print(len(list))
+            list.pop(0)
+            print("Lista wyszukanych elementów po wywaleniu headera")
+            print(len(list))
+            return list
 
-        def get_checkbox_from_record(self, record):
-            return record.find_element(By.CSS_SELECTOR, "div[class='oxd-checkbox-wrapper']")
+        def get_list_header(self):
+            WebDriverWait(self.driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"div[class='oxd-table-cell oxd-padding-cell']")))
+            return self.driver.find_element(By.CSS_SELECTOR, "div[class='oxd-table-row oxd-table-row--with-border']")
 
-        def get_username_from_record(self, record):
-            return record.find_elements(By.XPATH, "//div[@class='oxd-table-cell oxd-padding-cell']")[1].text
+
+        # All methods getting elements from a row stopped working due to the changes in the search results
+        def get_list_of_row_elements(self,row):
+            return row.find_elements(By.XPATH, ".//div[@class='oxd-table-cell oxd-padding-cell']")
+
+        def get_checkbox_from_record(self, row):
+            return self.get_list_of_row_elements(row)[0]
+
+        def get_username_from_record(self, row):
+            elList = self.get_list_of_row_elements(row)
+            return elList[1]
 
         def get_bin_icon_of_row(self, row):
-            return row.find_element(By.CSS_SELECTOR, "i[class='oxd-icon bi-trash']")
+            elList = self.get_list_of_row_elements(row)
+            print(len(elList))
+            buttons = elList[5]
+            return buttons.find_elements(By.XPATH, ".//button[@class='oxd-icon-button oxd-table-cell-action-space']")[0]
 
         def get_edit_icon_of_row(self, row):
             return row.self.driver.find_element(By.CSS_SELECTOR, "i[class='oxd-icon bi-pencil-fill']")
@@ -87,7 +107,6 @@ class AdminSearchUserPage:
             #6-Edit
             for i in listOfWebElements:
                 data = i.find_elements(By.XPATH, "//div[@class='oxd-table-cell oxd-padding-cell']")[numberForInfo].text
-                print(data)
                 if data == searchedPhrase:
                     pass
                 else:
@@ -151,13 +170,14 @@ class AdminSearchUserPageTest(BaseTest, AdminSearchUserPage):
     def test005_delete_user_from_list(self):
 
         database = DataFactory
-        test_user = DataFactory.get_user_by_id(database,5)
+        test_user = DataFactory.get_user_by_id(database,6)
         username = DataFactory.get_username_from_record(database,test_user)
 
         self.get_username_input().send_keys(username)
         self.get_submit_button().click()
 
         list_of_search_result = self.get_search_results()
+        sleep(3)
         self.delete_row(list_of_search_result[1])
         list_of_search_result_after = self.get_search_results()
         sleep(3)
@@ -167,14 +187,25 @@ class AdminSearchUserPageTest(BaseTest, AdminSearchUserPage):
 
     def test999_delete_all_users(self):
 
-        list_of_search_result = self.get_search_results()
-        self.get_checkbox_from_record(list_of_search_result[0]).click()
+        self.get_checkbox_from_record(self.get_list_header()).click()
         self.get_delete_all_users_button().click()
         self.get_yes_delete_button().click()
 
-    def test_for_test(self):
-        search_results = self.get_search_results()
+    def test666(self):
 
-        for i in search_results:
-            data = i.find_elements(By.XPATH, "//div[@class='oxd-table-cell oxd-padding-cell']")[3].text
-            print(data)
+        list_of_search_result = self.get_search_results()
+        #self.get_checkbox_from_record(list_of_search_result[5]).click()
+        sleep(5)
+        #self.get_bin_icon_of_row(list_of_search_result[6]).click()
+        self.delete_row(list_of_search_result[5])
+        sleep(5)
+
+
+    #     for i in list_of_search_result:
+    #        row = i.find_elements(By.XPATH, ".//div[@class='oxd-table-cell oxd-padding-cell']")
+    #
+    #        for j in row:
+    #            print(j.text)
+    #
+    #     self.get_checkbox_from_record(list_of_search_result[4]).click()
+    #     sleep(10)
